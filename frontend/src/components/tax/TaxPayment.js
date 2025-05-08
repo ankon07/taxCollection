@@ -51,7 +51,6 @@ const TaxPayment = () => {
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
   const [walletRequired, setWalletRequired] = useState(false);
   
   const [bankAccounts, setBankAccounts] = useState([]);
@@ -218,7 +217,6 @@ const TaxPayment = () => {
       
       // Set the payment result
       setPaymentResult(paymentResult);
-      setSuccess(true);
       setActiveStep(2);
       
       toast.success('Tax payment processed successfully on the blockchain!');
