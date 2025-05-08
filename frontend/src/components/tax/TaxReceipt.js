@@ -9,12 +9,7 @@ import {
   CircularProgress,
   Alert,
   Divider,
-  Grid,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableRow
+  Grid
 } from '@mui/material';
 import {
   VerifiedUser as VerifiedUserIcon,

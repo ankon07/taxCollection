@@ -30,7 +30,7 @@ import { AuthContext } from '../../context/AuthContext';
 import { toast } from 'react-toastify';
 
 const IncomeDeclaration = () => {
-  const { user, isAuthenticated, loading: authLoading } = useContext(AuthContext);
+  const { loading: authLoading } = useContext(AuthContext);
   const navigate = useNavigate();
   
   const [activeStep, setActiveStep] = useState(0);

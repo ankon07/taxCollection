@@ -10,7 +10,6 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-  Link,
   Chip,
   Tooltip
 } from '@mui/material';
@@ -27,7 +26,6 @@ import { toast } from 'react-toastify';
 
 const ConnectWallet = () => {
   const { 
-    wallet, 
     publicKey, 
     connecting, 
     connected, 

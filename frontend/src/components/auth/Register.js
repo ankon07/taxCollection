@@ -12,8 +12,7 @@ import {
   Alert,
   Stepper,
   Step,
-  StepLabel,
-  Grid
+  StepLabel
 } from '@mui/material';
 import { AuthContext } from '../../context/AuthContext';
 

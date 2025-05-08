@@ -20,16 +20,13 @@ import {
   Card,
   CardContent,
   Grid,
-  Divider,
   FormControl,
   InputLabel,
   Select,
   MenuItem
 } from '@mui/material';
 import {
-  Receipt as ReceiptIcon,
   Visibility as VisibilityIcon,
-  FilterList as FilterListIcon,
   Download as DownloadIcon,
   Print as PrintIcon
 } from '@mui/icons-material';
@@ -38,7 +35,7 @@ import { AuthContext } from '../../context/AuthContext';
 import { toast } from 'react-toastify';
 
 const TaxHistory = () => {
-  const { user, isAuthenticated, loading: authLoading } = useContext(AuthContext);
+  const { isAuthenticated, loading: authLoading } = useContext(AuthContext);
   const navigate = useNavigate();
   
   const [loading, setLoading] = useState(true);

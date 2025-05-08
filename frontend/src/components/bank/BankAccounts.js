@@ -16,11 +16,7 @@ import {
   TableRow,
   Chip,
   IconButton,
-  Tooltip,
-  Card,
-  CardContent,
-  Grid,
-  Divider
+  Tooltip
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -34,7 +30,7 @@ import { AuthContext } from '../../context/AuthContext';
 import { toast } from 'react-toastify';
 
 const BankAccounts = () => {
-  const { user, isAuthenticated, loading: authLoading } = useContext(AuthContext);
+  const { isAuthenticated, loading: authLoading } = useContext(AuthContext);
   const navigate = useNavigate();
   
   const [loading, setLoading] = useState(true);

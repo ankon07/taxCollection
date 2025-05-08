@@ -9,14 +9,12 @@ import {
   Box,
   CircularProgress,
   Alert,
-  Divider,
   Grid,
   Card,
   CardContent,
   CardActions,
   Avatar,
   Chip,
-  IconButton,
   Tooltip
 } from '@mui/material';
 import {
@@ -28,12 +26,11 @@ import {
   VerifiedUser as VerifiedUserIcon,
   Security as SecurityIcon
 } from '@mui/icons-material';
-import axios from 'axios';
 import { AuthContext } from '../../context/AuthContext';
 import { toast } from 'react-toastify';
 
 const Profile = () => {
-  const { user, isAuthenticated, loading: authLoading, updateProfile, generateBlockchainKeys } = useContext(AuthContext);
+  const { user, loading: authLoading, updateProfile, generateBlockchainKeys } = useContext(AuthContext);
   const navigate = useNavigate();
   
   const [loading, setLoading] = useState(false);

@@ -20,7 +20,6 @@ import {
   TableBody,
   TableCell,
   TableContainer,
-  TableHead,
   TableRow,
   Stepper,
   Step,
@@ -36,12 +35,11 @@ import {
 } from '@mui/icons-material';
 import axios from 'axios';
 import { AuthContext } from '../../context/AuthContext';
-import ConnectWallet from '../wallet/ConnectWallet';
 import { toast } from 'react-toastify';
 
 const TaxPayment = () => {
-  const { user, isAuthenticated, loading: authLoading } = useContext(AuthContext);
-  const { connected, publicKey, signAndSendTransaction } = useContext(WalletContext);
+  const { isAuthenticated, loading: authLoading } = useContext(AuthContext);
+  const { connected, publicKey } = useContext(WalletContext);
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -171,7 +169,7 @@ const TaxPayment = () => {
         throw new Error(prepareResponse.data.message || 'Failed to prepare payment transaction');
       }
       
-      const { transaction, paymentId } = prepareResponse.data;
+      const { paymentId } = prepareResponse.data;
       
       // Step 2: Instead of trying to sign the transaction directly, 
       // we'll simulate a successful transaction since we're in a test environment

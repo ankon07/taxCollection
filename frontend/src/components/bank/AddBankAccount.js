@@ -23,7 +23,6 @@ import {
   FormControlLabel
 } from '@mui/material';
 import {
-  AccountBalance as AccountBalanceIcon,
   CheckCircle as CheckCircleIcon,
   ArrowBack as ArrowBackIcon
 } from '@mui/icons-material';
@@ -32,13 +31,12 @@ import { AuthContext } from '../../context/AuthContext';
 import { toast } from 'react-toastify';
 
 const AddBankAccount = () => {
-  const { user, isAuthenticated, loading: authLoading } = useContext(AuthContext);
+  const { loading: authLoading } = useContext(AuthContext);
   const navigate = useNavigate();
   
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
   
   const [formData, setFormData] = useState({
     bankName: '',
@@ -158,7 +156,6 @@ const AddBankAccount = () => {
       await axios.post('/users/link-bank', bankAccountData);
       
       // Update state on success
-      setSuccess(true);
       setActiveStep(2);
       
       toast.success('Bank account added successfully!');

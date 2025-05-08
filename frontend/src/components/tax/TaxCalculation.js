@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import {
   Container,
   Typography,
-  TextField,
   Button,
   Paper,
   Box,
@@ -21,16 +20,13 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Chip,
   Tooltip,
   IconButton,
   InputAdornment
 } from '@mui/material';
 import {
   Info as InfoIcon,
-  Lock as LockIcon,
   Security as SecurityIcon,
-  CheckCircle as CheckCircleIcon,
   Calculate as CalculateIcon
 } from '@mui/icons-material';
 import axios from 'axios';
@@ -38,7 +34,7 @@ import { AuthContext } from '../../context/AuthContext';
 import { toast } from 'react-toastify';
 
 const TaxCalculation = () => {
-  const { user, isAuthenticated, loading: authLoading } = useContext(AuthContext);
+  const { isAuthenticated, loading: authLoading } = useContext(AuthContext);
   const navigate = useNavigate();
   
   const [loading, setLoading] = useState(false);
