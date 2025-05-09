@@ -12,7 +12,10 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
 
   // Configure axios defaults
-  axios.defaults.baseURL = 'http://localhost:5000/api';
+  // Use relative URL in production, localhost in development
+  axios.defaults.baseURL = process.env.NODE_ENV === 'production' 
+    ? '/api' 
+    : 'http://localhost:5000/api';
   
   // Set auth token for all requests if available
   useEffect(() => {

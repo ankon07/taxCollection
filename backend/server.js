@@ -16,7 +16,14 @@ const blockchainRoutes = require('./routes/blockchainRoutes');
 const app = express();
 
 // Middleware
-app.use(cors());
+// Configure CORS based on environment
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production' 
+    ? [/\.vercel\.app$/, /localhost/] // Allow Vercel domains and localhost
+    : process.env.CORS_ORIGIN || 'http://localhost:3000',
+  credentials: true
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Connect to MongoDB

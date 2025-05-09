@@ -61,7 +61,7 @@ const ConnectWallet = () => {
       setLinking(true);
       
       // Call API to link wallet
-      const response = await axios.post('/api/users/link-wallet', {
+      const response = await axios.post('/users/link-wallet', {
         walletAddress: publicKey
       });
       
