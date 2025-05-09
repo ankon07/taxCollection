@@ -49,16 +49,33 @@ const Dashboard = () => {
   
   useEffect(() => {
     const fetchDashboardData = async () => {
+      if (!isAuthenticated) {
+        return;
+      }
+      
       try {
         setLoading(true);
+        setError(null);
         
         // Fetch bank accounts
-        const bankAccountsResponse = await axios.get('/users/bank-accounts');
-        const bankAccounts = bankAccountsResponse.data;
+        let bankAccounts = [];
+        try {
+          const bankAccountsResponse = await axios.get('/users/bank-accounts');
+          bankAccounts = bankAccountsResponse.data;
+        } catch (err) {
+          console.error('Error fetching bank accounts:', err);
+          setError('Failed to load bank accounts. Please try again.');
+        }
         
         // Fetch tax history
-        const taxHistoryResponse = await axios.get('/tax/history');
-        const taxHistory = taxHistoryResponse.data;
+        let taxHistory = [];
+        try {
+          const taxHistoryResponse = await axios.get('/tax/history');
+          taxHistory = taxHistoryResponse.data;
+        } catch (err) {
+          console.error('Error fetching tax history:', err);
+          setError('Failed to load tax history. Please try again.');
+        }
         
         // Calculate pending actions based on user data
         const pendingActions = [];

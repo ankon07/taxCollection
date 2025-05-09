@@ -19,11 +19,30 @@
       "dest": "backend/server.js"
     },
     {
-      "src": "/(.*)",
-      "dest": "frontend/$1"
+      "src": "^/static/(.*)",
+      "dest": "frontend/static/$1"
     },
     {
-      "src": "/",
+      "src": "^/assets/(.*)",
+      "dest": "frontend/assets/$1"
+    },
+    {
+      "src": "^/favicon.ico",
+      "dest": "frontend/favicon.ico"
+    },
+    {
+      "src": "^/manifest.json",
+      "dest": "frontend/manifest.json"
+    },
+    {
+      "src": "^/logo192.png",
+      "dest": "frontend/logo192.png"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
       "dest": "frontend/index.html"
     }
   ]

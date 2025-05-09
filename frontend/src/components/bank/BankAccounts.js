@@ -41,25 +41,28 @@ const BankAccounts = () => {
   // Fetch bank accounts on component mount
   useEffect(() => {
     const fetchBankAccounts = async () => {
+      if (!isAuthenticated) {
+        return;
+      }
+      
       try {
         setLoading(true);
+        setError(null);
         
         // Fetch bank accounts from API
         const response = await axios.get('/users/bank-accounts');
         
         // Set bank accounts from API response
         setBankAccounts(response.data);
-        setLoading(false);
       } catch (err) {
         console.error('Error fetching bank accounts:', err);
         setError('Failed to load bank accounts. Please try again.');
+      } finally {
         setLoading(false);
       }
     };
     
-    if (isAuthenticated) {
-      fetchBankAccounts();
-    }
+    fetchBankAccounts();
   }, [isAuthenticated]);
   
   const handleAddBankAccount = () => {
