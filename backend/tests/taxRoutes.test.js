@@ -77,7 +77,8 @@ describe('Tax API', () => {
         .set('x-auth-token', authToken)
         .send({
           proofId: 'mock-proof-id',
-          incomeRange: 'income > 700000'
+          incomeRange: 'income > 700000',
+          incomeThreshold: 700000
         });
       
       expect(res.statusCode).toEqual(200);

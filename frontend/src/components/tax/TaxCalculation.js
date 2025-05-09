@@ -128,7 +128,8 @@ const TaxCalculation = () => {
       // Call API to calculate tax
       const response = await axios.post('/tax/calculate', {
         proofId: selectedProofId,
-        incomeRange: range.label
+        incomeRange: range.label,
+        incomeThreshold: range.threshold
       });
       
       // Process the response
