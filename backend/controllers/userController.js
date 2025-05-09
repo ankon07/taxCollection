@@ -225,6 +225,34 @@ exports.getBankAccounts = async (req, res) => {
   }
 };
 
+// Delete user's bank account
+exports.deleteBankAccount = async (req, res) => {
+  try {
+    const accountId = req.params.id;
+    
+    // Find the bank account
+    const bankAccount = await BankAccount.findById(accountId);
+    
+    // Check if bank account exists
+    if (!bankAccount) {
+      return res.status(404).json({ message: 'Bank account not found' });
+    }
+    
+    // Check if the bank account belongs to the user
+    if (bankAccount.user.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Not authorized to delete this bank account' });
+    }
+    
+    // Delete the bank account
+    await BankAccount.findByIdAndDelete(accountId);
+    
+    res.json({ message: 'Bank account deleted successfully' });
+  } catch (error) {
+    console.error('Delete bank account error:', error);
+    res.status(500).json({ message: 'Server error while deleting bank account' });
+  }
+};
+
 // Generate blockchain keys for user
 exports.generateBlockchainKeys = async (req, res) => {
   try {

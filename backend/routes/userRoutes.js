@@ -13,6 +13,7 @@ router.get('/profile', authMiddleware, userController.getUserProfile);
 router.put('/profile', authMiddleware, userController.updateUserProfile);
 router.post('/link-bank', authMiddleware, userController.linkBankAccount);
 router.get('/bank-accounts', authMiddleware, userController.getBankAccounts);
+router.delete('/bank-accounts/:id', authMiddleware, userController.deleteBankAccount);
 router.post('/generate-keys', authMiddleware, userController.generateBlockchainKeys);
 router.post('/link-wallet', authMiddleware, userController.linkWallet);
 
