@@ -9,9 +9,18 @@ async function main() {
   // Get the network name
   const networkName = hre.network.name;
 
-  // Deploy ZKPVerifier contract
+  // For the ZKPVerifier, we need a verifier contract address
+  // Since we don't have an actual zk-SNARK verifier contract deployed yet,
+  // we'll use a placeholder address that we can update later
+  const [deployer] = await hre.ethers.getSigners();
+  
+  // Use deployer address as a temporary placeholder for the verifier contract
+  // In a production environment, this would be the address of a real zk-SNARK verifier
+  const mockVerifierAddress = deployer.address;
+  
+  // Deploy ZKPVerifier contract with the mock verifier address
   const ZKPVerifier = await hre.ethers.getContractFactory("ZKPVerifier");
-  const zkpVerifier = await ZKPVerifier.deploy();
+  const zkpVerifier = await ZKPVerifier.deploy(mockVerifierAddress);
   await zkpVerifier.deployed();
   
   const zkpVerifierAddress = zkpVerifier.address;
@@ -19,7 +28,6 @@ async function main() {
 
   // Deploy TaxSystem contract with ZKPVerifier address
   // Create a treasury wallet address (in a real deployment, this would be a real address)
-  const [deployer] = await hre.ethers.getSigners();
   const treasuryWallet = deployer.address; // Using deployer as treasury for demo
   
   const TaxSystem = await hre.ethers.getContractFactory("TaxSystem");

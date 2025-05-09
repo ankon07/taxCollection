@@ -14,7 +14,11 @@ exports.getUserProofs = async (req, res) => {
       .sort({ createdAt: -1 }) // Sort by creation date, newest first
       .select('-proof -publicSignals'); // Exclude large fields
     
-    res.json(proofs);
+    // Return a proper response object
+    res.json({
+      message: "ZKP proofs retrieved successfully",
+      proofs: proofs
+    });
   } catch (error) {
     console.error('Get user proofs error:', error);
     res.status(500).json({ message: 'Server error while fetching user proofs' });
@@ -129,18 +133,34 @@ exports.verifyProof = async (req, res) => {
       return res.status(400).json({ message: 'Proof ID is required' });
     }
     
-    // Find the ZKP proof record
+    // Find the ZKP proof record - accept any proof regardless of status
     const zkpProofRecord = await ZkpProof.findOne({
       _id: proofId,
-      status: 'proof_generated'
+      user: req.user.id
     });
     
     if (!zkpProofRecord) {
-      return res.status(404).json({ message: 'ZKP proof record not found or invalid status' });
+      return res.status(404).json({ message: 'ZKP proof record not found' });
+    }
+    
+    // Check if the proof has already been verified
+    if (zkpProofRecord.status === 'proof_verified' || zkpProofRecord.status === 'proof_verified_on_chain') {
+      return res.json({
+        message: 'Zero-Knowledge Proof already verified',
+        proofId: zkpProofRecord._id,
+        incomeRange: zkpProofRecord.incomeRange,
+        status: zkpProofRecord.status,
+        verifiedAt: zkpProofRecord.verifiedAt
+      });
+    }
+    
+    // Check if the proof has been generated
+    if (!zkpProofRecord.proof || !zkpProofRecord.publicSignals) {
+      return res.status(400).json({ message: 'Proof has not been generated yet' });
     }
     
     // Verify the ZKP proof
-    const isValid = await zkpService.verifyProof(
+    const isValid = await zkpService.verifyProofData(
       zkpProofRecord.proof,
       zkpProofRecord.publicSignals
     );

@@ -337,7 +337,7 @@ const IncomeDeclaration = () => {
               <Typography variant="subtitle1" gutterBottom>
                 Transaction Details:
               </Typography>
-              <Paper elevation={0} sx={{ p: 2, bgcolor: 'primary.light', color: 'primary.contrastText' }}>
+              <Paper elevation={0} sx={{ p: 2, bgcolor: '#3a2a5a', color: 'primary.contrastText' }}>
                 <Typography variant="body2" gutterBottom>
                   <strong>Proof ID:</strong> {proofId}
                 </Typography>

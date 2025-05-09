@@ -207,7 +207,7 @@ The system uses the following ZKP components:
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/yourusername/zkp-tax-system.git
+   git clone https://github.com/ankon07/taxCollection.git
    cd zkp-tax-system
    ```
 

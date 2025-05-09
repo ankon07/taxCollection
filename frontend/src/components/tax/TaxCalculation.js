@@ -60,7 +60,7 @@ const TaxCalculation = () => {
         
         // Fetch ZKP proofs from API
         const proofsResponse = await axios.get('/zkp/proofs');
-        const proofs = proofsResponse.data;
+        const proofs = proofsResponse.data.proofs;
         
         console.log('Fetched proofs:', proofs);
         
@@ -222,7 +222,7 @@ const TaxCalculation = () => {
                 ) : (
                   proofs.map((proof) => (
                     <MenuItem key={proof._id} value={proof._id}>
-                      {proof._id.substring(0, 8)}... ({new Date(proof.createdAt).toLocaleDateString()})
+                      {proof._id}
                     </MenuItem>
                   ))
                 )}

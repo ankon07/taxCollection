@@ -2,25 +2,23 @@
 pragma solidity ^0.8.0;
 
 import "./ZKPVerifier.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 /**
  * @title TaxSystem
- * @dev Smart contract for the ZKP-based tax collection system
+ * @dev Smart contract for ZKP-based tax collection system with real payments
  */
-contract TaxSystem {
+contract TaxSystem is ReentrancyGuard {
     // State variables
-    address public owner;
+    address public immutable owner;
     address public treasuryWallet;
     ZKPVerifier public zkpVerifier;
     
     // Mapping to store tax payments
-    mapping(address => mapping(string => TaxPayment)) public taxPayments;
-    
-    // Mapping to store user commitments
-    mapping(address => string) public userCommitments;
+    mapping(address => mapping(bytes32 => TaxPayment)) public taxPayments;
     
     // Array to store all tax payment hashes for auditing
-    string[] public allTaxPaymentHashes;
+    bytes32[] public allTaxPaymentHashes;
     
     // Total tax collected
     uint256 public totalTaxCollected;
@@ -29,15 +27,17 @@ contract TaxSystem {
     struct TaxPayment {
         address userAddress;
         uint256 amount;
-        string proofId;
+        bytes32 proofId;
         uint256 timestamp;
         bool verified;
     }
     
     // Events
-    event CommitmentStored(address indexed userAddress, string commitment);
-    event TaxPaid(address indexed userAddress, uint256 amount, string proofId, string paymentHash);
-    event ProofVerified(address indexed userAddress, string proofId, bool isValid);
+    event CommitmentStored(address indexed userAddress, bytes32 commitment);
+    event TaxPaid(address indexed userAddress, uint256 amount, bytes32 proofId, bytes32 paymentHash);
+    event ProofVerified(address indexed userAddress, bytes32 proofId, bool isValid);
+    event TreasuryWalletUpdated(address indexed oldWallet, address indexed newWallet);
+    event ZKPVerifierUpdated(address indexed oldVerifier, address indexed newVerifier);
     
     // Modifiers
     modifier onlyOwner() {
@@ -51,6 +51,8 @@ contract TaxSystem {
      * @param _zkpVerifier Address of the ZKP verifier contract
      */
     constructor(address _treasuryWallet, address _zkpVerifier) {
+        require(_treasuryWallet != address(0), "Invalid treasury wallet");
+        require(_zkpVerifier != address(0), "Invalid ZKP verifier");
         owner = msg.sender;
         treasuryWallet = _treasuryWallet;
         zkpVerifier = ZKPVerifier(_zkpVerifier);
@@ -59,25 +61,57 @@ contract TaxSystem {
     
     /**
      * @dev Store income commitment
-     * @param commitment Cryptographic commitment of income
+     * @param commitment Cryptographic commitment of income (keccak256 hash)
      */
-    function storeCommitment(string memory commitment) public {
-        userCommitments[msg.sender] = commitment;
+    function storeCommitment(bytes32 commitment) external {
+        require(commitment != bytes32(0), "Invalid commitment");
+        zkpVerifier.storeCommitment(commitment);
         emit CommitmentStored(msg.sender, commitment);
     }
     
     /**
-     * @dev Process tax payment
-     * @param amount Tax amount
-     * @param proofId ID of the ZKP proof
+     * @dev Process tax payment with ZKP verification
+     * @param amount Tax amount in wei
+     * @param a zk-SNARK proof parameter A
+     * @param b zk-SNARK proof parameter B
+     * @param c zk-SNARK proof parameter C
+     * @param input Public inputs for the proof
      * @return paymentHash Hash of the tax payment
      */
-    function processTaxPayment(uint256 amount, string memory proofId) public returns (string memory paymentHash) {
-        // In a real implementation, this would transfer funds from user to treasury
-        // For this demo, we'll just record the payment
+    function processTaxPayment(
+        uint256 amount,
+        uint[2] memory a,
+        uint[2][2] memory b,
+        uint[2] memory c,
+        uint[] memory input
+    ) external payable nonReentrant returns (bytes32 paymentHash) {
+        require(msg.value == amount, "Incorrect payment amount");
+        require(amount > 0, "Amount must be greater than zero");
+        
+        // Verify the zk-SNARK proof
+        bool isValid = zkpVerifier.verifyProof(a, b, c, input);
+        require(isValid, "Invalid ZKP proof");
+        
+        // Generate a unique proof ID
+        bytes32 proofId = keccak256(abi.encodePacked(a, b, c, input));
         
         // Generate a unique payment hash
-        paymentHash = generatePaymentHash(msg.sender, amount, proofId);
+        paymentHash = keccak256(
+            abi.encodePacked(
+                msg.sender,
+                amount,
+                proofId,
+                block.timestamp,
+                block.chainid
+            )
+        );
+        
+        // Check for replay attack
+        require(taxPayments[msg.sender][paymentHash].timestamp == 0, "Payment already processed");
+        
+        // Transfer funds to treasury
+        (bool success, ) = treasuryWallet.call{value: amount}("");
+        require(success, "Transfer to treasury failed");
         
         // Create tax payment record
         TaxPayment memory payment = TaxPayment({
@@ -95,7 +129,8 @@ contract TaxSystem {
         // Update total tax collected
         totalTaxCollected += amount;
         
-        // Emit event
+        // Emit events
+        emit ProofVerified(msg.sender, proofId, isValid);
         emit TaxPaid(msg.sender, amount, proofId, paymentHash);
         
         return paymentHash;
@@ -107,7 +142,7 @@ contract TaxSystem {
      * @param userAddress Address of the user
      * @return verified Whether the receipt is valid
      */
-    function verifyTaxReceipt(string memory paymentHash, address userAddress) public view returns (bool verified) {
+    function verifyTaxReceipt(bytes32 paymentHash, address userAddress) external view returns (bool verified) {
         TaxPayment memory payment = taxPayments[userAddress][paymentHash];
         return payment.verified && payment.timestamp > 0;
     }
@@ -116,38 +151,29 @@ contract TaxSystem {
      * @dev Get treasury balance
      * @return balance Balance of the treasury wallet
      */
-    function getTreasuryBalance() public view returns (uint256 balance) {
-        // In a real implementation, this would return the actual balance
-        // For this demo, we'll return the total tax collected
-        return totalTaxCollected;
-    }
-    
-    /**
-     * @dev Generate payment hash
-     * @param userAddress Address of the user
-     * @param amount Tax amount
-     * @param proofId ID of the ZKP proof
-     * @return paymentHash Hash of the tax payment
-     */
-    function generatePaymentHash(address userAddress, uint256 amount, string memory proofId) internal view returns (string memory) {
-        // In a real implementation, this would use a proper hashing algorithm
-        // For this demo, we'll use a simple concatenation
-        return string(abi.encodePacked(userAddress, amount, proofId, block.timestamp));
+    function getTreasuryBalance() external view returns (uint256 balance) {
+        return treasuryWallet.balance;
     }
     
     /**
      * @dev Update treasury wallet address
      * @param _treasuryWallet New treasury wallet address
      */
-    function updateTreasuryWallet(address _treasuryWallet) public onlyOwner {
+    function updateTreasuryWallet(address _treasuryWallet) external onlyOwner {
+        require(_treasuryWallet != address(0), "Invalid treasury wallet");
+        address oldWallet = treasuryWallet;
         treasuryWallet = _treasuryWallet;
+        emit TreasuryWalletUpdated(oldWallet, _treasuryWallet);
     }
     
     /**
      * @dev Update ZKP verifier contract address
      * @param _zkpVerifier New ZKP verifier contract address
      */
-    function updateZKPVerifier(address _zkpVerifier) public onlyOwner {
+    function updateZKPVerifier(address _zkpVerifier) external onlyOwner {
+        require(_zkpVerifier != address(0), "Invalid ZKP verifier");
+        address oldVerifier = address(zkpVerifier);
         zkpVerifier = ZKPVerifier(_zkpVerifier);
+        emit ZKPVerifierUpdated(oldVerifier, _zkpVerifier);
     }
 }

@@ -1,0 +1,6 @@
+{
+  "network": "sepolia",
+  "groth16Verifier": "0xEF571DDFD02EF7a96c7f960354797E42e6E06411",
+  "zkpVerifier": "0x60ce98D9D4E16CbD184Eeceaf15843EeBB0FD65b",
+  "deploymentTime": "2025-05-09T20:32:25.919Z"
+}

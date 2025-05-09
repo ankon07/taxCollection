@@ -1,7 +1,7 @@
 {
   "network": "sepolia",
-  "zkpVerifier": "0x1C568689269FDAAbF2778700A614347D4d350e66",
-  "taxSystem": "0x4ec418640be48ab54cbFbbc762383d16056b2432",
+  "zkpVerifier": "0xEd6549F4c3a94a6D196969adf3826e5620313492",
+  "taxSystem": "0x67bB2A14b9657A3C09CaE1b512d91fFFc3c77621",
   "treasuryWallet": "0x09D49Fd8214287A20D1A3c1142EadA7Ad1490357",
-  "deploymentTime": "2025-05-07T18:29:51.617Z"
+  "deploymentTime": "2025-05-09T21:49:48.790Z"
 }

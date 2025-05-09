@@ -39,7 +39,7 @@ import { toast } from 'react-toastify';
 
 const TaxPayment = () => {
   const { isAuthenticated, loading: authLoading } = useContext(AuthContext);
-  const { connected, publicKey } = useContext(WalletContext);
+  const { connected, publicKey, connectWallet } = useContext(WalletContext);
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -86,7 +86,7 @@ const TaxPayment = () => {
         if (!proofIdFromCalculation) {
           const proofsResponse = await axios.get('/zkp/proofs');
           // Filter only verified proofs
-          const verifiedProofs = proofsResponse.data.filter(
+          const verifiedProofs = proofsResponse.data.proofs.filter(
             proof => proof.status === 'proof_verified' || proof.status === 'proof_verified_on_chain'
           );
           
@@ -404,7 +404,7 @@ const TaxPayment = () => {
                     <Button
                       variant="contained"
                       color="primary"
-                      onClick={() => navigate('/connect-wallet')}
+                      onClick={connectWallet}
                     >
                       Connect Wallet
                     </Button>
@@ -433,7 +433,7 @@ const TaxPayment = () => {
               <Typography variant="subtitle1" gutterBottom>
                 Payment Details:
               </Typography>
-              <Paper elevation={0} sx={{ p: 2, bgcolor: 'grey.100' }}>
+              <Paper elevation={0} sx={{ p: 2, bgcolor: 'rgba(182, 159, 255, 0.2)' }}>
                 <Grid container spacing={2}>
                   <Grid item xs={6}>
                     <Typography variant="body2" gutterBottom>
