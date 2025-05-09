@@ -198,7 +198,7 @@ const Header = () => {
                   }}>
                     <Box 
                       component="img" 
-                      src="https://phantom.app/img/phantom-logo.svg" 
+                      src="https://raw.githubusercontent.com/ankon07/cli-reminder/refs/heads/main/Phantom-Icon_Transparent_White.svg" 
                       alt="Phantom Logo"
                       sx={{ 
                         width: 20, 
@@ -313,7 +313,7 @@ const Header = () => {
                     {connected ? (
                       <Box 
                         component="img" 
-                        src="https://phantom.app/img/phantom-logo.svg" 
+                        src="https://raw.githubusercontent.com/ankon07/cli-reminder/refs/heads/main/Phantom-Icon_Transparent_White.svg" 
                         alt="Phantom Logo"
                         sx={{ 
                           width: 24, 

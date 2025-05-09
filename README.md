@@ -9,6 +9,8 @@ A blockchain-based tax collection system using Zero-Knowledge Proofs for privacy
 - [Overview](#overview)
 - [System Architecture](#system-architecture)
 - [Key Features](#key-features)
+- [Blockchain Technology](#blockchain-technology)
+- [Backend Structure](#backend-structure)
 - [User Guide](#user-guide)
 - [Technical Overview](#technical-overview)
 - [Privacy and Security](#privacy-and-security)
@@ -94,6 +96,107 @@ Cryptographic protocols that enable:
 - **Automated Verification**: Automatically verify Zero-Knowledge Proofs for tax bracket compliance.
 - **Treasury Management**: Track total tax collected and manage the treasury wallet.
 
+## Blockchain Technology
+
+The ZKP Tax System leverages several blockchain technologies and libraries to provide secure, transparent, and privacy-preserving tax collection:
+
+### Core Blockchain Infrastructure
+
+- **Ethereum**: The system uses Ethereum as its primary blockchain platform, providing a secure and decentralized foundation for smart contracts and transactions.
+- **Sepolia Testnet**: For testing and development, the system is deployed on the Sepolia testnet, allowing for realistic testing without using real ETH.
+- **Smart Contracts**: Written in Solidity 0.8.x, the smart contracts handle ZKP verification, tax payment processing, and receipt generation.
+
+### Smart Contract Components
+
+- **ZKPVerifier**: A specialized contract that verifies zero-knowledge proofs submitted by taxpayers.
+- **ZKPVerifierFixed**: An optimized version of the verifier with improved gas efficiency.
+- **ZKPVerifierGenerated**: Automatically generated from the verification key using snarkjs.
+- **TaxSystem**: The main contract that handles tax payments, receipts, and treasury management.
+
+### Development and Deployment Tools
+
+- **Hardhat**: Used as the primary development environment for compiling, testing, and deploying smart contracts.
+- **ethers.js**: Library for interacting with the Ethereum blockchain from both the frontend and backend.
+- **Web3.js**: Alternative library used for specific blockchain interactions.
+- **Hardhat Plugins**:
+  - **hardhat-deploy**: For managing deployments across different networks
+  - **hardhat-gas-reporter**: For optimizing gas usage
+  - **hardhat-contract-sizer**: For monitoring contract size
+
+### Zero-Knowledge Proof Integration
+
+- **circom**: Used to create the ZKP circuits for income range verification.
+- **snarkjs**: JavaScript library that generates and verifies ZKPs.
+- **groth16**: The proving system used for efficient ZKP generation and verification.
+
+### Deployment Process
+
+1. ZKP circuits are compiled using circom to generate the necessary files.
+2. A trusted setup is performed to generate proving and verification keys.
+3. The verifier contract is generated from the verification key.
+4. Smart contracts are deployed to the target network (local, testnet, or mainnet).
+5. Contract addresses and ABIs are updated in the backend and frontend configurations.
+
+## Backend Structure
+
+The backend of the ZKP Tax System is built with Node.js and Express.js, organized in a modular architecture for maintainability and scalability:
+
+### Core Components
+
+- **Server**: The main Express application that handles HTTP requests and middleware integration.
+- **Routes**: API endpoints organized by domain (user, tax, blockchain, zkp).
+- **Controllers**: Business logic handlers that process requests and return responses.
+- **Models**: MongoDB schemas and models for data persistence.
+- **Middleware**: Request processing functions for authentication, error handling, etc.
+- **Utils**: Utility services and helper functions.
+
+### API Structure
+
+The backend API is organized into four main domains:
+
+1. **User API** (`/userRoutes.js`):
+   - User registration and authentication
+   - Profile management
+   - Session handling
+
+2. **Tax API** (`/taxRoutes.js`):
+   - Tax bracket information
+   - Tax calculation
+   - Payment processing
+   - Receipt generation
+   - Tax history
+
+3. **Blockchain API** (`/blockchainRoutes.js`):
+   - Smart contract interaction
+   - Transaction submission
+   - Blockchain data retrieval
+   - Treasury management
+
+4. **ZKP API** (`/zkpRoutes.js`):
+   - Income commitment generation
+   - ZKP generation
+   - ZKP verification
+   - Public parameters retrieval
+
+### Services and Utilities
+
+- **blockchainService.js**: Handles all interactions with the Ethereum blockchain, including contract calls and transaction submission.
+- **zkpService.js**: Manages ZKP operations, including commitment generation, proof creation, and verification.
+- **authMiddleware.js**: Handles user authentication and authorization for protected routes.
+
+### Database Models
+
+- **User.js**: Stores user account information and profile details.
+- **BankAccount.js**: Manages linked bank accounts for tax payments.
+- **TaxPayment.js**: Records tax payment information and receipt details.
+- **ZkpProof.js**: Stores ZKP-related data, including commitments and proofs.
+
+### Integration Points
+
+- **Blockchain Integration**: The backend communicates with the Ethereum blockchain using ethers.js through the blockchainService.
+- **ZKP Integration**: Zero-knowledge proof operations are handled by snarkjs through the zkpService.
+- **Frontend Communication**: The backend exposes RESTful APIs that the React frontend consumes using Axios.
+
 ## User Guide
 
 ### Registration and Authentication
@@ -112,9 +215,10 @@ Cryptographic protocols that enable:
 ### Tax Calculation
 
 1. **Go to Tax Calculation**: Access the "Calculate Tax" section from the dashboard.
-2. **View Tax Breakdown**: See a breakdown of your tax calculation based on your income bracket.
-3. **Review Deductions**: Review any applicable deductions or exemptions.
-4. **Confirm Calculation**: Confirm the tax calculation before proceeding to payment.
+2. **Select Income Commitment**: Choose your income commitment from the dropdown (displays the full commitment ID).
+3. **Select Income Range**: Choose the income range that applies to you.
+4. **Calculate Tax**: The system will calculate your tax based on the selected range.
+5. **Review Calculation**: Review the tax calculation details before proceeding to payment.
 
 ### Bank Account Management
 
@@ -149,6 +253,7 @@ Cryptographic protocols that enable:
 - **Axios**: HTTP client for API requests
 - **React Router**: For navigation between pages
 - **Context API**: For state management
+- **react-toastify**: For displaying notifications
 
 ### Backend Technologies
 
@@ -159,6 +264,7 @@ Cryptographic protocols that enable:
 - **JSON Web Tokens (JWT)**: For authentication
 - **bcrypt**: For password hashing
 - **snarkjs**: Library for Zero-Knowledge Proof operations
+- **ethers.js**: Library for Ethereum blockchain interaction
 
 ### Blockchain Technologies
 
@@ -166,6 +272,8 @@ Cryptographic protocols that enable:
 - **Solidity**: Programming language for smart contracts
 - **Hardhat**: Development environment for Ethereum
 - **ethers.js**: Library for interacting with Ethereum
+- **circom**: Language for creating ZKP circuits
+- **groth16**: Proving system for ZKPs
 
 ### Zero-Knowledge Proof Implementation
 
@@ -175,6 +283,7 @@ The system uses the following ZKP components:
 - **Range Proofs**: ZKPs that prove income is within a specific range
 - **Verification Circuit**: Circuit for verifying the ZKPs on-chain
 - **snarkjs**: JavaScript library for generating and verifying ZKPs
+- **WASM**: WebAssembly for efficient ZKP operations
 
 ## Privacy and Security
 
@@ -301,6 +410,13 @@ cd src/blockchain
 npx hardhat test
 ```
 
+To test on the Sepolia testnet:
+
+```bash
+cd src/blockchain
+./scripts/run-sepolia-tests.sh
+```
+
 #### Integration Tests
 
 To test the integration between frontend, backend, and blockchain:
@@ -314,25 +430,54 @@ npm test -- tests/integration.test.js
 
 - **src/backend/**: Backend API server
   - **controllers/**: Request handlers
+    - **blockchainController.js**: Handles blockchain interactions
+    - **taxController.js**: Manages tax calculations and payments
+    - **userController.js**: Handles user authentication and profile management
+    - **zkpController.js**: Manages ZKP operations
   - **models/**: Database models
+    - **BankAccount.js**: Bank account schema
+    - **TaxPayment.js**: Tax payment schema
+    - **User.js**: User schema
+    - **ZkpProof.js**: ZKP proof schema
   - **routes/**: API routes
+    - **blockchainRoutes.js**: Blockchain-related endpoints
+    - **taxRoutes.js**: Tax-related endpoints
+    - **userRoutes.js**: User-related endpoints
+    - **zkpRoutes.js**: ZKP-related endpoints
   - **middleware/**: Express middleware
+    - **authMiddleware.js**: Authentication middleware
   - **utils/**: Utility functions
+    - **blockchainService.js**: Blockchain interaction service
+    - **zkpService.js**: ZKP operations service
   - **tests/**: Test files
 
 - **src/frontend/**: Frontend application
   - **src/components/**: React components
+    - **auth/**: Authentication components
+    - **bank/**: Bank account management components
+    - **dashboard/**: Dashboard components
+    - **layout/**: Layout components
+    - **profile/**: User profile components
+    - **tax/**: Tax-related components
+    - **wallet/**: Wallet connection components
   - **src/context/**: Context providers
+    - **AuthContext.js**: Authentication context
+    - **WalletContext.js**: Wallet connection context
   - **src/abis/**: Contract ABIs
 
 - **src/blockchain/**: Smart contracts and blockchain integration
   - **contracts/**: Solidity smart contracts
+    - **TaxSystem.sol**: Main tax system contract
+    - **ZKPVerifier.sol**: ZKP verification contract
+    - **ZKPVerifierFixed.sol**: Optimized ZKP verifier
+    - **ZKPVerifierGenerated.sol**: Generated ZKP verifier
   - **scripts/**: Deployment and testing scripts
   - **test/**: Contract test files
+  - **deployments/**: Deployment artifacts
 
 - **src/zkp/**: Zero-Knowledge Proof circuits and keys
   - **circuits/**: ZKP circuit definitions
-  - **keys/**: Proving and verification keys
+  - **build/**: Compiled circuits and keys
 
 ## Troubleshooting
 
@@ -362,6 +507,11 @@ npm test -- tests/integration.test.js
   - Check that the wallet is connected to the correct network
   - Verify that the user has granted permission to the application
 
+- **Rendering Issues**:
+  - Check for JavaScript errors in the console
+  - Verify that the data is being properly fetched from the API
+  - Ensure that components are receiving the expected props
+
 #### Blockchain Issues
 
 - **Smart Contract Interaction Failures**:
@@ -373,6 +523,11 @@ npm test -- tests/integration.test.js
   - Check the transaction parameters
   - Verify that the user has approved any required token allowances
   - Check for gas estimation errors
+
+- **ZKP Verification Failures**:
+  - Ensure the ZKP is generated correctly
+  - Verify that the verification key matches the proving key
+  - Check that the circuit inputs are valid
 
 ### Getting Help
 
