@@ -18,8 +18,6 @@ interface IZKVerifier {
     ) external view returns (bool);
 }
 
-import "./ZKPVerifierGenerated.sol";
-
 contract ZKPVerifier {
     // State variables
     address public owner;

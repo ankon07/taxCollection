@@ -49,14 +49,23 @@ const BankAccounts = () => {
         setLoading(true);
         setError(null);
         
-        // Fetch bank accounts from API
-        const response = await axios.get('/users/bank-accounts');
+        // Fetch bank accounts from API with timeout
+        const fetchWithTimeout = async (promise, timeoutMs = 10000) => {
+          const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Request timed out')), timeoutMs);
+          });
+          return Promise.race([promise, timeoutPromise]);
+        };
+        
+        const response = await fetchWithTimeout(axios.get('/users/bank-accounts'));
         
         // Set bank accounts from API response
         setBankAccounts(response.data);
       } catch (err) {
         console.error('Error fetching bank accounts:', err);
         setError('Failed to load bank accounts. Please try again.');
+        // Set empty array to prevent UI from waiting indefinitely
+        setBankAccounts([]);
       } finally {
         setLoading(false);
       }
@@ -92,8 +101,11 @@ const BankAccounts = () => {
   
   if (authLoading || loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="calc(100vh - 128px)">
-        <CircularProgress />
+      <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" minHeight="calc(100vh - 128px)">
+        <CircularProgress size={60} thickness={4} sx={{ color: '#8a4bff', mb: 2 }} />
+        <Typography variant="h6" color="textSecondary">
+          Loading bank accounts...
+        </Typography>
       </Box>
     );
   }

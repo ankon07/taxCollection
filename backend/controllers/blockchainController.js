@@ -305,14 +305,16 @@ exports.deductTax = async (req, res) => {
       proofData.pi_a[1]
     ];
     
+    // IMPORTANT: The order of b needs to be swapped for the Groth16Verifier
+    // The contract expects b in a different format than what's provided
     const b = [
       [
-        proofData.pi_b[0][0],
-        proofData.pi_b[0][1]
+        proofData.pi_b[0][1], // Swap these coordinates
+        proofData.pi_b[0][0]
       ],
       [
-        proofData.pi_b[1][0],
-        proofData.pi_b[1][1]
+        proofData.pi_b[1][1], // Swap these coordinates
+        proofData.pi_b[1][0]
       ]
     ];
     

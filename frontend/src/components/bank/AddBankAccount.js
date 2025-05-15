@@ -152,8 +152,15 @@ const AddBankAccount = () => {
         ifscCode: formData.ifscCode || undefined
       };
       
-      // Call API to add bank account
-      await axios.post('/users/link-bank', bankAccountData);
+      // Call API to add bank account with timeout
+      const fetchWithTimeout = async (promise, timeoutMs = 10000) => {
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Request timed out')), timeoutMs);
+        });
+        return Promise.race([promise, timeoutPromise]);
+      };
+      
+      await fetchWithTimeout(axios.post('/users/link-bank', bankAccountData));
       
       // Update state on success
       setActiveStep(2);
@@ -161,7 +168,11 @@ const AddBankAccount = () => {
       toast.success('Bank account added successfully!');
     } catch (err) {
       console.error('Error adding bank account:', err);
-      setError('Failed to add bank account. Please try again.');
+      if (err.message === 'Request timed out') {
+        setError('Request timed out. Please try again.');
+      } else {
+        setError('Failed to add bank account. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -410,8 +421,11 @@ const AddBankAccount = () => {
   
   if (authLoading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="calc(100vh - 128px)">
-        <CircularProgress />
+      <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" minHeight="calc(100vh - 128px)">
+        <CircularProgress size={60} thickness={4} sx={{ color: '#8a4bff', mb: 2 }} />
+        <Typography variant="h6" color="textSecondary">
+          Loading...
+        </Typography>
       </Box>
     );
   }

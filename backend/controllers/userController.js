@@ -55,7 +55,9 @@ exports.registerUser = async (req, res) => {
       mobile,
       nidNumber,
       tinNumber,
-      password: hashedPassword
+      password: hashedPassword,
+      // Explicitly set walletAddress to undefined to avoid MongoDB setting it to null
+      walletAddress: undefined
     });
     
     await user.save();

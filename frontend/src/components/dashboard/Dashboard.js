@@ -8,7 +8,6 @@ import {
   Box,
   Button,
   CircularProgress,
-  Alert,
   Card,
   CardContent,
   CardActions,
@@ -34,7 +33,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // Remove error state since we're not displaying errors anymore
   const [dashboardData, setDashboardData] = useState({
     bankAccounts: [],
     taxHistory: [],
@@ -55,26 +54,47 @@ const Dashboard = () => {
       
       try {
         setLoading(true);
-        setError(null);
         
-        // Fetch bank accounts
+        // Fetch bank accounts and tax history in parallel
         let bankAccounts = [];
-        try {
-          const bankAccountsResponse = await axios.get('/users/bank-accounts');
-          bankAccounts = bankAccountsResponse.data;
-        } catch (err) {
-          console.error('Error fetching bank accounts:', err);
-          setError('Failed to load bank accounts. Please try again.');
-        }
-        
-        // Fetch tax history
         let taxHistory = [];
+        
+        // Use Promise.all to fetch data in parallel with timeout and retry
+        const fetchWithTimeout = async (promise, timeoutMs = 10000) => {
+          const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Request timed out')), timeoutMs);
+          });
+          return Promise.race([promise, timeoutPromise]);
+        };
+        
+        // Retry function for API calls
+        const fetchWithRetry = async (apiCall, maxRetries = 3) => {
+          let lastError;
+          for (let i = 0; i < maxRetries; i++) {
+            try {
+              return await fetchWithTimeout(apiCall);
+            } catch (err) {
+              console.log(`Attempt ${i + 1} failed, retrying...`);
+              lastError = err;
+              // Wait before retrying (exponential backoff)
+              await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, i)));
+            }
+          }
+          throw lastError; // All retries failed
+        };
+        
         try {
-          const taxHistoryResponse = await axios.get('/tax/history');
+          const [bankAccountsResponse, taxHistoryResponse] = await Promise.all([
+            fetchWithRetry(axios.get('/users/bank-accounts')),
+            fetchWithRetry(axios.get('/tax/history'))
+          ]);
+          
+          bankAccounts = bankAccountsResponse.data;
           taxHistory = taxHistoryResponse.data;
         } catch (err) {
-          console.error('Error fetching tax history:', err);
-          setError('Failed to load tax history. Please try again.');
+          console.error('Error fetching dashboard data after retries:', err);
+          // Don't set error state to avoid showing error on dashboard
+          // Instead, we'll just use empty arrays and let the UI handle it gracefully
         }
         
         // Calculate pending actions based on user data
@@ -139,7 +159,7 @@ const Dashboard = () => {
         setLoading(false);
       } catch (err) {
         console.error('Error fetching dashboard data:', err);
-        setError('Failed to load dashboard data. Please try again.');
+        // Just log the error and set loading to false
         setLoading(false);
       }
     };
@@ -151,8 +171,11 @@ const Dashboard = () => {
   
   if (authLoading || loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="calc(100vh - 128px)">
-        <CircularProgress />
+      <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" minHeight="calc(100vh - 128px)">
+        <CircularProgress size={60} thickness={4} sx={{ color: '#8a4bff', mb: 2 }} />
+        <Typography variant="h6" color="textSecondary">
+          Loading dashboard...
+        </Typography>
       </Box>
     );
   }
@@ -171,11 +194,7 @@ const Dashboard = () => {
             Welcome, {user?.fullName}
           </Typography>
           
-          {error && (
-            <Alert severity="error" sx={{ mb: 3 }}>
-              {error}
-            </Alert>
-          )}
+          {/* Error alerts removed as requested */}
         
           {/* Stats Cards */}
           <Grid container spacing={3} sx={{ mb: 4 }}>

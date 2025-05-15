@@ -40,8 +40,7 @@ const UserSchema = new mongoose.Schema({
     default: null
   },
   walletAddress: {
-    type: String,
-    default: null
+    type: String
   },
   isVerified: {
     type: Boolean,
@@ -57,6 +56,14 @@ const UserSchema = new mongoose.Schema({
   }
 }, {
   timestamps: true
+});
+
+// Create a custom index that enforces uniqueness only for non-null wallet addresses
+UserSchema.index({ 
+  walletAddress: 1 
+}, { 
+  unique: true, 
+  partialFilterExpression: { walletAddress: { $type: "string" } } 
 });
 
 module.exports = mongoose.model('User', UserSchema);

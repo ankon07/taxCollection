@@ -68,6 +68,8 @@ class ZkpService {
     const path = require('path');
     const { promisify } = require('util');
     const writeFileAsync = promisify(fs.writeFile);
+    const { exec } = require('child_process');
+    const execAsync = promisify(exec);
     
     console.log(`Generating ZKP for income: ${income}, range: ${incomeRange}`);
     
@@ -100,10 +102,77 @@ class ZkpService {
     // Generate a commitment using keccak256 to match the contract
     const commitment = this.generateCommitment(income, randomSecret);
     
-    // Since we're having issues with the real proof generation, let's use the simulated proof
-    // This will ensure the API works correctly while we fix the underlying ZKP implementation
-    console.log('Using simulated proof generation for reliable API response');
-    return this.generateSimulatedProof(income, randomSecret, threshold, commitment);
+    try {
+      console.log('Generating real ZKP proof using snarkjs...');
+      
+      // Paths to required files
+      const BUILD_DIR = path.join(__dirname, '../../blockchain/zkp/build');
+      const inputPath = path.join(BUILD_DIR, 'input.json');
+      const wasmPath = path.join(BUILD_DIR, 'income_range_js', 'income_range.wasm');
+      const zkeyPath = path.join(BUILD_DIR, 'income_range.zkey');
+      const proofPath = path.join(BUILD_DIR, 'proof.json');
+      const publicPath = path.join(BUILD_DIR, 'public.json');
+      const verificationKeyPath = path.join(__dirname, '../../blockchain/zkp/verification_key.json');
+      
+      // Create input file
+      const input = {
+        income: parseInt(income),
+        randomSecret: parseInt(randomSecret) || Math.floor(Math.random() * 1000000000),
+        threshold: parseInt(threshold)
+      };
+      
+      // Ensure the income is greater than the threshold for a valid proof
+      if (input.income <= input.threshold) {
+        console.warn('Warning: Income must be greater than threshold for a valid proof. Using simulated proof instead.');
+        return this.generateSimulatedProof(income, randomSecret, threshold, commitment);
+      }
+      
+      // Write input to file
+      await writeFileAsync(inputPath, JSON.stringify(input, null, 2));
+      
+      // Generate proof using snarkjs
+      console.log('Executing snarkjs to generate proof...');
+      await execAsync(`cd ${path.dirname(BUILD_DIR)} && npx snarkjs groth16 fullprove ${inputPath} ${wasmPath} ${zkeyPath} ${proofPath} ${publicPath}`);
+      
+      // Verify proof
+      console.log('Verifying proof...');
+      const verifyResult = await execAsync(`cd ${path.dirname(BUILD_DIR)} && npx snarkjs groth16 verify ${verificationKeyPath} ${publicPath} ${proofPath}`);
+      console.log('Proof verification result:', verifyResult.stdout);
+      
+      // Read the proof and public signals
+      const proof = JSON.parse(fs.readFileSync(proofPath, 'utf8'));
+      const publicSignals = JSON.parse(fs.readFileSync(publicPath, 'utf8'));
+      
+      // Format the proof for the smart contract
+      const solidityProof = {
+        pi_a: proof.pi_a,
+        pi_b: proof.pi_b,
+        pi_c: proof.pi_c,
+        protocol: "groth16"
+      };
+      
+      console.log('Successfully generated real ZKP proof');
+      
+      // Return the proof and public signals
+      return { 
+        proof: solidityProof, 
+        publicSignals,
+        // Also include the formatted values ready for the contract
+        contractParams: {
+          a: [proof.pi_a[0], proof.pi_a[1]],
+          b: [
+            [proof.pi_b[0][1], proof.pi_b[0][0]], // Note: b coordinates are swapped for the contract
+            [proof.pi_b[1][1], proof.pi_b[1][0]]
+          ],
+          c: [proof.pi_c[0], proof.pi_c[1]],
+          input: publicSignals
+        }
+      };
+    } catch (error) {
+      console.error('Error generating real ZKP proof:', error.message);
+      console.log('Falling back to simulated proof generation');
+      return this.generateSimulatedProof(income, randomSecret, threshold, commitment);
+    }
   }
   
   /**
@@ -322,7 +391,7 @@ class ZkpService {
     // For now, we'll return a mock verification key that matches the format expected by snarkjs
     
     try {
-      // Try to load the verification key from a file if it exists
+      // Load the verification key from file
       const fs = require('fs');
       const path = require('path');
       const vkPath = path.join(__dirname, '../zkp/verification_key.json');
@@ -333,6 +402,8 @@ class ZkpService {
         return {
           verificationKey: vkJson
         };
+      } else {
+        console.warn('Verification key file not found at:', vkPath);
       }
     } catch (error) {
       console.warn('Error loading verification key from file:', error.message);

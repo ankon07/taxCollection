@@ -60,7 +60,7 @@ const createUser = async () => {
       password: hashedPassword,
       blockchainPublicKey: '0x09D49Fd8214287A20D1A3c1142EadA7Ad1490357', // Real blockchain public key
       blockchainPrivateKey: '0xa76c4fa04faee85e1a718f3b21fbb59f79d034837723b320709531d9e072d0c6', // Real blockchain private key
-      walletAddress: '0x09D49Fd8214287A20D1A3c1142EadA7Ad1490357' // Real wallet address
+      walletAddress: '0x09D49Fd8214287A20D1A3c1142EadA7Ad1490357' // Real wallet address - this is fine since it's a non-null value
     });
     
     await user.save();
