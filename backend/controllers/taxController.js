@@ -223,17 +223,14 @@ exports.confirmPayment = async (req, res) => {
       console.log('- Amount:', taxPayment.amount);
       console.log('- Proof ID:', taxPayment.proofId);
       
-      // For testing purposes, we'll generate a simulated transaction hash
-      // This avoids actual blockchain interactions which might fail in a test environment
-      txHash = '0x' + Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('');
-      console.log('Generated simulated transaction hash:', txHash);
+      // Call the blockchain service to process the payment
+      txHash = await blockchainService.processTaxPayment(
+        req.user.id,
+        taxPayment.amount,
+        taxPayment.proofId
+      );
       
-      // In a production environment, we would call the blockchain service
-      // txHash = await blockchainService.processTaxPayment(
-      //   req.user.id,
-      //   taxPayment.amount,
-      //   taxPayment.proofId
-      // );
+      console.log('Transaction hash from blockchain:', txHash);
     } catch (processError) {
       console.error('Process payment error:', processError);
       return res.status(500).json({ 
@@ -318,17 +315,14 @@ exports.payTax = async (req, res) => {
       console.log('- Amount:', amount);
       console.log('- Proof ID:', proofId);
       
-      // For testing purposes, we'll generate a simulated transaction hash
-      // This avoids actual blockchain interactions which might fail in a test environment
-      txHash = '0x' + Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('');
-      console.log('Generated simulated transaction hash (legacy method):', txHash);
+      // Call the blockchain service to process the payment
+      txHash = await blockchainService.processTaxPayment(
+        req.user.id,
+        amount,
+        proofId
+      );
       
-      // In a production environment, we would call the blockchain service
-      // txHash = await blockchainService.processTaxPayment(
-      //   req.user.id,
-      //   amount,
-      //   proofId
-      // );
+      console.log('Transaction hash from blockchain (legacy method):', txHash);
       
       // Update the payment record with transaction hash and date
       taxPayment.transactionHash = txHash;

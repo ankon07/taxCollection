@@ -855,41 +855,17 @@ class BlockchainService {
       // Send the actual transaction to the blockchain
       console.log('Sending tax payment transaction to the blockchain...');
       
-      try {
-        const tx = await this.taxContract.methods
-          .processTaxPayment(amountInWei, formattedA, formattedB, formattedC, formattedInput)
-          .send({ 
-            from: fromAddress,
-            value: amountInWei, // Send ETH with the transaction
-            gas: 500000 // Increased gas limit for complex operations
-          });
-        
-        console.log('Tax payment processed on blockchain:', tx.transactionHash);
-        return tx.transactionHash;
-      } catch (txError) {
-        console.error('Transaction failed:', txError.message);
-        
-        // For development/testing purposes, if the transaction fails, 
-        // we'll return a valid Sepolia testnet transaction hash
-        if (process.env.NODE_ENV !== 'production') {
-          console.log('Using fallback transaction hash for development/testing');
-          const validSepoliaHashes = [
-            '0x5a44ba9a6da7d9d2f8b47d5de0d5a1b9f122e9d1c9c8a1d3e7a8b9c0d1e2f3a4',
-            '0x7c3d5a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f',
-            '0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2',
-            '0xf1e2d3c4b5a6978685746352413f2e1d0c9b8a7968574635241f3e2d1c0b9a8',
-            '0x1f2e3d4c5b6a7988776655443322110f9e8d7c6b5a4938271605f4e3d2c1b0a'
-          ];
-          
-          // Select a random valid hash from the array
-          const txHash = validSepoliaHashes[Math.floor(Math.random() * validSepoliaHashes.length)];
-          console.log('Using valid Sepolia testnet transaction hash:', txHash);
-          return txHash;
-        }
-        
-        // In production, we should throw the error
-        throw txError;
-      }
+      // Send the actual transaction to the blockchain
+      const tx = await this.taxContract.methods
+        .processTaxPayment(amountInWei, formattedA, formattedB, formattedC, formattedInput)
+        .send({ 
+          from: fromAddress,
+          value: amountInWei, // Send ETH with the transaction
+          gas: 500000 // Increased gas limit for complex operations
+        });
+      
+      console.log('Tax payment processed on blockchain:', tx.transactionHash);
+      return tx.transactionHash;
     } catch (error) {
       console.error('Error processing tax payment on blockchain:', error);
       
@@ -930,19 +906,6 @@ class BlockchainService {
         return false;
       }
       
-      // Check if this is one of our valid Sepolia testnet transaction hashes
-      const validSepoliaHashes = [
-        '0x5a44ba9a6da7d9d2f8b47d5de0d5a1b9f122e9d1c9c8a1d3e7a8b9c0d1e2f3a4',
-        '0x7c3d5a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f',
-        '0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2',
-        '0xf1e2d3c4b5a6978685746352413f2e1d0c9b8a7968574635241f3e2d1c0b9a8',
-        '0x1f2e3d4c5b6a7988776655443322110f9e8d7c6b5a4938271605f4e3d2c1b0a'
-      ];
-      
-      if (validSepoliaHashes.includes(txHash)) {
-        console.log('Found valid Sepolia testnet transaction hash');
-        return true;
-      }
       
       // If not a valid test hash, try to verify on the blockchain
       try {

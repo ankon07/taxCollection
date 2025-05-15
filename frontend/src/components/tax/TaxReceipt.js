@@ -315,9 +315,15 @@ const TaxReceipt = () => {
                   </Typography>
                 </Grid>
                 <Grid item xs={12} sm={8}>
-                  <Typography variant="body1" sx={{ color: 'white' }}>
-                    {receipt.bankAccount.bankName} - {receipt.bankAccount.accountNumber}
-                  </Typography>
+                  {receipt.bankAccount ? (
+                    <Typography variant="body1" sx={{ color: 'white' }}>
+                      {receipt.bankAccount.bankName} - {receipt.bankAccount.accountNumber}
+                    </Typography>
+                  ) : (
+                    <Typography variant="body1" sx={{ color: 'white' }}>
+                      Not specified
+                    </Typography>
+                  )}
                 </Grid>
                 
                 <Grid item xs={12} sm={4}>

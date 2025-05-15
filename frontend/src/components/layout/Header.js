@@ -1,5 +1,4 @@
 import React, { useContext, useState } from 'react';
-import ConnectWallet from '../wallet/ConnectWallet';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import {
   AppBar,
@@ -37,7 +36,8 @@ import { WalletContext } from '../../context/WalletContext';
 
 const Header = () => {
   const { user, isAuthenticated, logout } = useContext(AuthContext);
-  const { connected, publicKey } = useContext(WalletContext);
+  const { connected, publicKey, walletType, connectMetaMaskWallet } = useContext(WalletContext);
+  const isMetaMaskConnected = connected && walletType === 'metamask';
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -186,7 +186,7 @@ const Header = () => {
               )}
               
               <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
-                {connected ? (
+                {isMetaMaskConnected ? (
                   <Box sx={{ 
                     display: 'flex', 
                     alignItems: 'center', 
@@ -196,25 +196,42 @@ const Header = () => {
                     py: 0.5,
                     mr: 1
                   }}>
-                    <Box 
-                      component="img" 
-                      src="https://raw.githubusercontent.com/ankon07/cli-reminder/refs/heads/main/Phantom-Icon_Transparent_White.svg" 
-                      alt="Phantom Logo"
-                      sx={{ 
-                        width: 20, 
-                        height: 20,
-                        borderRadius: '50%',
-                        backgroundColor: '#AB9FF2',
-                        p: 0.3,
-                        mr: 1
-                      }}
-                    />
+                    <WalletIcon sx={{ 
+                      width: 20, 
+                      height: 20,
+                      mr: 1,
+                      color: '#ff9800'
+                    }} />
                     <Typography variant="body2" color="white">
                       {`${publicKey?.substring(0, 4)}...${publicKey?.substring(publicKey?.length - 4)}`}
                     </Typography>
                   </Box>
                 ) : (
-                  <ConnectWallet />
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<WalletIcon />}
+                    onClick={() => {
+                      console.log('Connect Wallet button clicked');
+                      connectMetaMaskWallet()
+                        .then(account => {
+                          console.log('MetaMask connected with account:', account);
+                        })
+                        .catch(err => {
+                          console.error('Failed to connect MetaMask:', err);
+                        });
+                    }}
+                    sx={{ 
+                      color: 'white',
+                      borderColor: 'rgba(255, 255, 255, 0.3)',
+                      '&:hover': {
+                        borderColor: '#8a4bff',
+                        bgcolor: 'rgba(138, 75, 255, 0.1)',
+                      }
+                    }}
+                  >
+                    Connect Wallet
+                  </Button>
                 )}
               </Box>
               
@@ -310,31 +327,32 @@ const Header = () => {
                 
                 <MenuItem onClick={() => handleNavigation('/dashboard')}>
                   <ListItemIcon>
-                    {connected ? (
-                      <Box 
-                        component="img" 
-                        src="https://raw.githubusercontent.com/ankon07/cli-reminder/refs/heads/main/Phantom-Icon_Transparent_White.svg" 
-                        alt="Phantom Logo"
-                        sx={{ 
-                          width: 24, 
-                          height: 24,
-                          borderRadius: '50%',
-                          backgroundColor: '#AB9FF2',
-                          p: 0.5
-                        }}
-                      />
-                    ) : (
-                      <WalletIcon fontSize="small" />
-                    )}
+                    <WalletIcon fontSize="small" sx={{ color: isMetaMaskConnected ? '#ff9800' : 'inherit' }} />
                   </ListItemIcon>
-                  {connected ? (
+                  {isMetaMaskConnected ? (
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Typography variant="inherit">
-                        {`${user?.walletAddress?.substring(0, 6)}...${user?.walletAddress?.substring(user?.walletAddress?.length - 4)}`}
+                        {`${publicKey?.substring(0, 6)}...${publicKey?.substring(publicKey?.length - 4)}`}
                       </Typography>
                     </Box>
                   ) : (
-                    'Connect Wallet'
+                    <Typography 
+                      variant="inherit" 
+                      onClick={() => {
+                        console.log('Connect MetaMask menu item clicked');
+                        connectMetaMaskWallet()
+                          .then(account => {
+                            console.log('MetaMask connected with account:', account);
+                            handleMenuClose(); // Close the menu after connecting
+                          })
+                          .catch(err => {
+                            console.error('Failed to connect MetaMask:', err);
+                          });
+                      }}
+                      sx={{ cursor: 'pointer' }}
+                    >
+                      Connect MetaMask
+                    </Typography>
                   )}
                 </MenuItem>
                 

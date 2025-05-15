@@ -29,7 +29,7 @@ const ConnectWallet = () => {
     publicKey, 
     connecting, 
     connected, 
-    connectWallet, 
+    connectPhantomWallet, 
     disconnectWallet,
     isPhantomInstalled
   } = useContext(WalletContext);
@@ -47,7 +47,7 @@ const ConnectWallet = () => {
       return;
     }
     
-    await connectWallet();
+    await connectPhantomWallet();
   };
   
   // Handle wallet disconnection

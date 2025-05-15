@@ -309,10 +309,18 @@ const TaxHistory = () => {
                     <TableCell>{payment.amount.toLocaleString()} BDT</TableCell>
                     <TableCell>{payment.fiscalYear}</TableCell>
                     <TableCell>
-                      {payment.bankAccount.bankName}<br />
-                      <Typography variant="caption" color="textSecondary">
-                        {payment.bankAccount.accountNumber}
-                      </Typography>
+                      {payment.bankAccount ? (
+                        <>
+                          {payment.bankAccount.bankName}<br />
+                          <Typography variant="caption" color="textSecondary">
+                            {payment.bankAccount.accountNumber}
+                          </Typography>
+                        </>
+                      ) : (
+                        <Typography variant="body2" color="textSecondary">
+                          Not specified
+                        </Typography>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Chip
